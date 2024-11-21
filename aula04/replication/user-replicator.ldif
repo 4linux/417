@@ -1,0 +1,6 @@
+dn: cn=replicator,dc=4labs,dc=example
+objectClass: simpleSecurityObject
+objectClass: organizationalRole
+cn: replicator
+description: Usuário para replicação LDAP
+userPassword: {SSHA}GJUlpIo79WOXTtrHSgeXfrbsS2NQcwGt

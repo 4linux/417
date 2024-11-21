@@ -1,0 +1,13 @@
+dn: uid=joana.barros,ou=vendas,ou=usuarios,dc=4labs,dc=example
+objectClass: inetOrgPerson
+objectClass: posixAccount
+objectClass: shadowAccount
+cn: Joana Barros
+sn: Barros
+uid: joana.barros
+mail: joana.barros@4labs.example
+userPassword: {SSHA}rOdWDtdSRkexd8/wX14pddrCDCd4klEF
+uidNumber: 2026
+gidNumber: 2003
+homeDirectory: /home/joana.barros
+loginShell: /bin/bash

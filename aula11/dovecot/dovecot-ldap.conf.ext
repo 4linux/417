@@ -1,0 +1,5 @@
+uris = ldap://ldap-master1.4labs.example
+dn = cn=Manager,dc=4labs,dc=example
+dnpass = Admin123!
+base = dc=4labs,dc=example
+user_filter = (&(objectClass=inetOrgPerson)(uid=%u))

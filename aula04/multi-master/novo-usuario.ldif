@@ -1,0 +1,13 @@
+dn: uid=marcio.oliveira,ou=consultoria,ou=usuarios,dc=4labs,dc=example
+objectClass: inetOrgPerson
+objectClass: posixAccount
+objectClass: shadowAccount
+cn: Marcio Oliveira
+sn: Oliveira
+uid: marcio.oliveira
+mail: marcio.oliveira@4labs.example
+userPassword: {SSHA}rOdWDtdSRkexd8/wX14pddrCDCd4klEF
+uidNumber: 2023
+gidNumber: 2001
+homeDirectory: /home/marcio.oliveira
+loginShell: /bin/bash

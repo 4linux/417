@@ -1,0 +1,13 @@
+dn: uid=regina.melo,ou=vendas,ou=usuarios,dc=4labs,dc=example
+objectClass: inetOrgPerson
+objectClass: posixAccount
+objectClass: shadowAccount
+cn: Regina Melo
+sn: Melo
+uid: regina.melo
+mail: regina.melo@4labs.example
+userPassword: {SSHA}rOdWDtdSRkexd8/wX14pddrCDCd4klEF
+uidNumber: 2025
+gidNumber: 2003
+homeDirectory: /home/regina.melo
+loginShell: /bin/bash

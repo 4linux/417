@@ -1,0 +1,13 @@
+dn: uid=antonio.moura,ou=consultoria,ou=usuarios,dc=4labs,dc=example
+objectClass: inetOrgPerson
+objectClass: posixAccount
+objectClass: shadowAccount
+cn: Antonio Moura
+sn: Moura
+uid: antonio.moura
+mail: antonio.moura@4labs.example
+userPassword: {SSHA}rOdWDtdSRkexd8/wX14pddrCDCd4klEF
+uidNumber: 2027
+gidNumber: 2001
+homeDirectory: /home/antonio.moura
+loginShell: /bin/bash

@@ -1,0 +1,13 @@
+dn: uid=renata.campos,ou=rh,ou=usuarios,dc=4labs,dc=example
+objectClass: inetOrgPerson
+objectClass: posixAccount
+objectClass: shadowAccount
+cn: Renata Campos
+sn: Campo
+uid: renata.campos
+mail: renata.campos@4labs.example
+userPassword: {SSHA}rOdWDtdSRkexd8/wX14pddrCDCd4klEF
+uidNumber: 2021
+gidNumber: 2002
+homeDirectory: /home/renata.campos
+loginShell: /bin/bash

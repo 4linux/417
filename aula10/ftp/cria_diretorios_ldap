@@ -1,0 +1,36 @@
+#!/bin/bash
+
+# Diretório base onde os diretórios dos usuários serão criados
+BASE_DIR="/home"
+
+# Obter a lista de usuários LDAP com UID >= 2000, ignorando o usuário nobody
+USUARIOS=$(getent passwd | awk -F: '$3 >= 2000 { print $1 }' | grep -v "^nobody$")
+
+# Iterar sobre os usuários para criar diretórios
+for USUARIO in $USUARIOS; do
+    # Obter o grupo principal do usuário
+    GRUPO=$(id -gn "$USUARIO" 2>/dev/null)
+    
+    # Verificar se o diretório já existe
+    if [ ! -d "$BASE_DIR/$USUARIO" ]; then
+        echo "Criando diretório para o usuário $USUARIO no grupo $GRUPO"
+        mkdir "$BASE_DIR/$USUARIO"
+        chown "$USUARIO:$GRUPO" "$BASE_DIR/$USUARIO"
+        chmod 750 "$BASE_DIR/$USUARIO"
+        
+        # Ajustar o contexto do SELinux para o diretório
+        semanage fcontext -a -t user_home_dir_t "$BASE_DIR/$USUARIO"
+        restorecon -R "$BASE_DIR/$USUARIO"
+        
+        echo "Diretório criado e SELinux ajustado para $USUARIO"
+    else
+        echo "Diretório para o usuário $USUARIO já existe. Pulando..."
+    fi
+done
+
+# Ajustar o contexto do SELinux para o diretório base
+semanage fcontext -a -t user_home_dir_t "$BASE_DIR(/.*)?"
+restorecon -R "$BASE_DIR"
+
+echo "Criação de diretórios e ajustes de SELinux concluídos!"
+

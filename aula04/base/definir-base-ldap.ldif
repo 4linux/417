@@ -1,0 +1,12 @@
+# Base
+dn: dc=4labs,dc=example
+objectClass: top
+objectClass: dcObject
+objectclass: organization
+o: 4Labs Example
+dc: 4labs
+
+dn: cn=Manager,dc=4labs,dc=example
+objectClass: organizationalRole
+cn: Manager
+description: Directory Manager

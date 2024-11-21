@@ -1,0 +1,48 @@
+---
+- hosts: ldap-master2
+  become: yes
+  become_user: root
+  become_method: sudo
+  tasks:
+    - name: Garantindo /etc/hosts
+      lineinfile:
+        path: /etc/hosts
+        line: "{{ item }}"
+      with_items:
+        - 172.16.0.201 ldap-master1.4labs.example ldap-master1
+        - 172.16.0.202 ldap-master2.4labs.example ldap-master2
+        - 172.16.0.203 linux-services.4labs.example linux-services
+        - 172.16.0.204 samba-server.4labs.example samba-server
+        - 172.16.0.205 linux-client.4labs.example linux-client
+        - 172.16.0.206 windows-client.4labs.example windows-client
+
+    - name: Clona repositório com os arquivos do curso para a HOME do usuario suporte
+      git:
+        repo: 'https://github.com/4linux/417.git'
+        dest: /home/suporte/417
+
+    - name: Remove linhas que começam com 127.0.1.1 ou 127.0.2.1 no /etc/hosts
+      lineinfile:
+        path: /etc/hosts
+        regexp: '^127.0.[12].1'
+        state: absent
+
+    - name: Desativa o gerenciamento de DNS pelo NetworkManager
+      copy:
+        dest: /etc/NetworkManager/conf.d/dns.conf
+        content: |
+          [main]
+          dns=none
+
+    - name: Reinicia o NetworkManager para aplicar mudanças
+      service:
+        name: NetworkManager
+        state: restarted
+
+    - name: Configura o arquivo /etc/resolv.conf
+      copy:
+        dest: /etc/resolv.conf
+        content: |
+          search 4labs.example
+          nameserver 172.16.0.203
+          nameserver 8.8.8.8

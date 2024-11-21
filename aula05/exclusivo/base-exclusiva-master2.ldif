@@ -1,0 +1,9 @@
+dn: olcDatabase={2}mdb,cn=config
+objectClass: olcDatabaseConfig
+objectClass: olcMdbConfig
+olcDatabase: {2}mdb
+olcSuffix: dc=exclusive,dc=master2,dc=example
+olcRootDN: cn=Manager,dc=exclusive,dc=master2,dc=example
+olcRootPW: {SSHA}GJUlpIo79WOXTtrHSgeXfrbsS2NQcwGt
+olcDbDirectory: /var/lib/ldap/exclusive_master2
+olcDbIndex: objectClass eq

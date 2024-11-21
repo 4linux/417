@@ -1,0 +1,8 @@
+dn: dc=exclusive,dc=master2,dc=example
+objectClass: top
+objectClass: domain
+dc: exclusive
+
+dn: ou=master2,dc=exclusive,dc=master2,dc=example
+objectClass: organizationalUnit
+ou: master2

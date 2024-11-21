@@ -1,0 +1,5 @@
+dn: uid=conflito,ou=master2,dc=4labs,dc=example
+objectClass: inetOrgPerson
+uid: conflito
+sn: Conflito Master2
+cn: Conflito Teste

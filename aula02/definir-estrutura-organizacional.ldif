@@ -1,0 +1,373 @@
+# Root OUs for Organization
+dn: ou=usuarios,dc=4labs,dc=example
+objectClass: organizationalUnit
+ou: usuarios
+
+dn: ou=grupos,dc=4labs,dc=example
+objectClass: organizationalUnit
+ou: grupos
+
+# Departamento de Projetos
+dn: ou=projetos,ou=usuarios,dc=4labs,dc=example
+objectClass: organizationalUnit
+ou: projetos
+
+# Grupo do Departamento de Projetos
+dn: cn=projeto-team,ou=grupos,dc=4labs,dc=example
+objectClass: posixGroup
+cn: projeto-team
+gidNumber: 2000
+description: Grupo do departamento de projetos
+memberUid: marcio.santos
+memberUid: leticia.dias
+memberUid: cacio.farias
+memberUid: carla.neto
+memberUid: claudio.queiroz
+
+# Usuários do Departamento de Projetos
+dn: uid=marcio.santos,ou=projetos,ou=usuarios,dc=4labs,dc=example
+objectClass: inetOrgPerson
+objectClass: posixAccount
+objectClass: shadowAccount
+cn: Marcio Santos
+sn: Santos
+uid: marcio.santos
+mail: marcio.santos@4labs.example
+userPassword: {SSHA}rOdWDtdSRkexd8/wX14pddrCDCd4klEF
+uidNumber: 2001
+gidNumber: 2000
+homeDirectory: /home/marcio.santos
+loginShell: /bin/bash
+
+dn: uid=leticia.dias,ou=projetos,ou=usuarios,dc=4labs,dc=example
+objectClass: inetOrgPerson
+objectClass: posixAccount
+objectClass: shadowAccount
+cn: Leticia Dias
+sn: Dias
+uid: leticia.dias
+mail: leticia.dias@4labs.example
+userPassword: {SSHA}rOdWDtdSRkexd8/wX14pddrCDCd4klEF
+uidNumber: 2002
+gidNumber: 2000
+homeDirectory: /home/leticia.dias
+loginShell: /bin/bash
+
+dn: uid=cacio.farias,ou=projetos,ou=usuarios,dc=4labs,dc=example
+objectClass: inetOrgPerson
+objectClass: posixAccount
+objectClass: shadowAccount
+cn: Cacio Farias
+sn: Farias
+uid: cacio.farias
+mail: cacio.farias@4labs.example
+userPassword: {SSHA}rOdWDtdSRkexd8/wX14pddrCDCd4klEF
+uidNumber: 2003
+gidNumber: 2000
+homeDirectory: /home/cacio.farias
+loginShell: /bin/bash
+
+dn: uid=carla.neto,ou=projetos,ou=usuarios,dc=4labs,dc=example
+objectClass: inetOrgPerson
+objectClass: posixAccount
+objectClass: shadowAccount
+cn: Carla Neto
+sn: Neto
+uid: carla.neto
+mail: carla.neto@4labs.example
+userPassword: {SSHA}rOdWDtdSRkexd8/wX14pddrCDCd4klEF
+uidNumber: 2004
+gidNumber: 2000
+homeDirectory: /home/carla.neto
+loginShell: /bin/bash
+
+dn: uid=claudio.queiroz,ou=projetos,ou=usuarios,dc=4labs,dc=example
+objectClass: inetOrgPerson
+objectClass: posixAccount
+objectClass: shadowAccount
+cn: Claudio Queiroz
+sn: Queiroz
+uid: claudio.queiroz
+mail: claudio.queiroz@4labs.example
+userPassword: {SSHA}rOdWDtdSRkexd8/wX14pddrCDCd4klEF
+uidNumber: 2005
+gidNumber: 2000
+homeDirectory: /home/claudio.queiroz
+loginShell: /bin/bash
+
+# Departamento de Consultoria
+dn: ou=consultoria,ou=usuarios,dc=4labs,dc=example
+objectClass: organizationalUnit
+ou: consultoria
+
+# Grupo do Departamento de Consultoria
+dn: cn=consultoria-team,ou=grupos,dc=4labs,dc=example
+objectClass: posixGroup
+cn: consultoria-team
+gidNumber: 2001
+description: Grupo do departamento de consultoria
+memberUid: bruno.garcia
+memberUid: sandro.correia
+memberUid: rogerio.ribeiro
+memberUid: sergio.nogueira
+
+# Usuários do Departamento de Consultoria
+dn: uid=bruno.garcia,ou=consultoria,ou=usuarios,dc=4labs,dc=example
+objectClass: inetOrgPerson
+objectClass: posixAccount
+objectClass: shadowAccount
+cn: Bruno Garcia
+sn: Garcia
+uid: bruno.garcia
+mail: bruno.garcia@4labs.example
+userPassword: {SSHA}rOdWDtdSRkexd8/wX14pddrCDCd4klEF
+uidNumber: 2006
+gidNumber: 2001
+homeDirectory: /home/bruno.garcia
+loginShell: /bin/bash
+
+dn: uid=sandro.correia,ou=consultoria,ou=usuarios,dc=4labs,dc=example
+objectClass: inetOrgPerson
+objectClass: posixAccount
+objectClass: shadowAccount
+cn: Sandro Correia
+sn: Correia
+uid: sandro.correia
+mail: sandro.correia@4labs.example
+userPassword: {SSHA}rOdWDtdSRkexd8/wX14pddrCDCd4klEF
+uidNumber: 2007
+gidNumber: 2001
+homeDirectory: /home/sandro.correia
+loginShell: /bin/bash
+
+dn: uid=rogerio.ribeiro,ou=consultoria,ou=usuarios,dc=4labs,dc=example
+objectClass: inetOrgPerson
+objectClass: posixAccount
+objectClass: shadowAccount
+cn: Rogerio Ribeiro
+sn: Ribeiro
+uid: rogerio.ribeiro
+mail: rogerio.ribeiro@4labs.example
+userPassword: {SSHA}rOdWDtdSRkexd8/wX14pddrCDCd4klEF
+uidNumber: 2008
+gidNumber: 2001
+homeDirectory: /home/rogerio.ribeiro
+loginShell: /bin/bash
+
+dn: uid=sergio.nogueira,ou=consultoria,ou=usuarios,dc=4labs,dc=example
+objectClass: inetOrgPerson
+objectClass: posixAccount
+objectClass: shadowAccount
+cn: Sergio Nogueira
+sn: Nogueira
+uid: sergio.nogueira
+mail: sergio.nogueira@4labs.example
+userPassword: {SSHA}rOdWDtdSRkexd8/wX14pddrCDCd4klEF
+uidNumber: 2009
+gidNumber: 2001
+homeDirectory: /home/sergio.nogueira
+loginShell: /bin/bash
+
+# Departamento de Recursos Humanos (RH)
+dn: ou=rh,ou=usuarios,dc=4labs,dc=example
+objectClass: organizationalUnit
+ou: rh
+
+# Grupo do Departamento de RH
+dn: cn=rh-team,ou=grupos,dc=4labs,dc=example
+objectClass: posixGroup
+cn: rh-team
+gidNumber: 2002
+description: Grupo do departamento de Recursos Humanos
+memberUid: beatriz.dias
+memberUid: luciana.prado
+
+# Usuários do Departamento de RH
+dn: uid=beatriz.dias,ou=rh,ou=usuarios,dc=4labs,dc=example
+objectClass: inetOrgPerson
+objectClass: posixAccount
+objectClass: shadowAccount
+cn: Beatriz Dias
+sn: Dias
+uid: beatriz.dias
+mail: beatriz.dias@4labs.example
+userPassword: {SSHA}rOdWDtdSRkexd8/wX14pddrCDCd4klEF
+uidNumber: 2010
+gidNumber: 2002
+homeDirectory: /home/beatriz.dias
+loginShell: /bin/bash
+
+dn: uid=luciana.prado,ou=rh,ou=usuarios,dc=4labs,dc=example
+objectClass: inetOrgPerson
+objectClass: posixAccount
+objectClass: shadowAccount
+cn: Luciana Prado
+sn: Prado
+uid: luciana.prado
+mail: luciana.prado@4labs.example
+userPassword: {SSHA}rOdWDtdSRkexd8/wX14pddrCDCd4klEF
+uidNumber: 2011
+gidNumber: 2002
+homeDirectory: /home/luciana.prado
+loginShell: /bin/bash
+
+# Departamento de Vendas
+dn: ou=vendas,ou=usuarios,dc=4labs,dc=example
+objectClass: organizationalUnit
+ou: vendas
+
+# Grupo do Departamento de Vendas
+dn: cn=vendas-team,ou=grupos,dc=4labs,dc=example
+objectClass: posixGroup
+cn: vendas-team
+gidNumber: 2003
+description: Grupo do departamento de vendas
+memberUid: celia.silva
+memberUid: amanda.nunes
+memberUid: paula.priore
+memberUid: marcia.costa
+memberUid: roberta.amaral
+memberUid: rosana.rocha
+memberUid: samantha.reis
+
+# Usuários do Departamento de Vendas
+dn: uid=celia.silva,ou=vendas,ou=usuarios,dc=4labs,dc=example
+objectClass: inetOrgPerson
+objectClass: posixAccount
+objectClass: shadowAccount
+cn: Celia Silva
+sn: Silva
+uid: celia.silva
+mail: celia.silva@4labs.example
+userPassword: {SSHA}rOdWDtdSRkexd8/wX14pddrCDCd4klEF
+uidNumber: 2012
+gidNumber: 2003
+homeDirectory: /home/celia.silva
+loginShell: /bin/bash
+
+dn: uid=amanda.nunes,ou=vendas,ou=usuarios,dc=4labs,dc=example
+objectClass: inetOrgPerson
+objectClass: posixAccount
+objectClass: shadowAccount
+cn: Amanda Nunes
+sn: Nunes
+uid: amanda.nunes
+mail: amanda.nunes@4labs.example
+userPassword: {SSHA}rOdWDtdSRkexd8/wX14pddrCDCd4klEF
+uidNumber: 2013
+gidNumber: 2003
+homeDirectory: /home/amanda.nunes
+loginShell: /bin/bash
+
+dn: uid=paula.priore,ou=vendas,ou=usuarios,dc=4labs,dc=example
+objectClass: inetOrgPerson
+objectClass: posixAccount
+objectClass: shadowAccount
+cn: Paula Priore
+sn: Priore
+uid: paula.priore
+mail: paula.priore@4labs.example
+userPassword: {SSHA}rOdWDtdSRkexd8/wX14pddrCDCd4klEF
+uidNumber: 2014
+gidNumber: 2003
+homeDirectory: /home/paula.priore
+loginShell: /bin/bash
+
+dn: uid=marcia.costa,ou=vendas,ou=usuarios,dc=4labs,dc=example
+objectClass: inetOrgPerson
+objectClass: posixAccount
+objectClass: shadowAccount
+cn: Marcia Costa
+sn: Costa
+uid: marcia.costa
+mail: marcia.costa@4labs.example
+userPassword: {SSHA}rOdWDtdSRkexd8/wX14pddrCDCd4klEF
+uidNumber: 2015
+gidNumber: 2003
+homeDirectory: /home/marcia.costa
+loginShell: /bin/bash
+
+dn: uid=roberta.amaral,ou=vendas,ou=usuarios,dc=4labs,dc=example
+objectClass: inetOrgPerson
+objectClass: posixAccount
+objectClass: shadowAccount
+cn: Roberta Amaral
+sn: Amaral
+uid: roberta.amaral
+mail: roberta.amaral@4labs.example
+userPassword: {SSHA}rOdWDtdSRkexd8/wX14pddrCDCd4klEF
+uidNumber: 2016
+gidNumber: 2003
+homeDirectory: /home/roberta.amaral
+loginShell: /bin/bash
+
+dn: uid=rosana.rocha,ou=vendas,ou=usuarios,dc=4labs,dc=example
+objectClass: inetOrgPerson
+objectClass: posixAccount
+objectClass: shadowAccount
+cn: Rosana Rocha
+sn: Rocha
+uid: rosana.rocha
+mail: rosana.rocha@4labs.example
+userPassword: {SSHA}rOdWDtdSRkexd8/wX14pddrCDCd4klEF
+uidNumber: 2017
+gidNumber: 2003
+homeDirectory: /home/rosana.rocha
+loginShell: /bin/bash
+
+dn: uid=samantha.reis,ou=vendas,ou=usuarios,dc=4labs,dc=example
+objectClass: inetOrgPerson
+objectClass: posixAccount
+objectClass: shadowAccount
+cn: Samantha Reis
+sn: Reis
+uid: samantha.reis
+mail: samantha.reis@4labs.example
+userPassword: {SSHA}rOdWDtdSRkexd8/wX14pddrCDCd4klEF
+uidNumber: 2018
+gidNumber: 2003
+homeDirectory: /home/samantha.reis
+loginShell: /bin/bash
+
+# Departamento de Diretoria
+dn: ou=diretoria,ou=usuarios,dc=4labs,dc=example
+objectClass: organizationalUnit
+ou: diretoria
+
+# Grupo do Departamento de Diretoria
+dn: cn=diretoria,ou=grupos,dc=4labs,dc=example
+objectClass: posixGroup
+cn: diretoria
+gidNumber: 2004
+description: Grupo do departamento de diretoria
+memberUid: cezar.maia
+memberUid: diego.chaves
+
+# Usuários do Departamento de Diretoria
+dn: uid=cezar.maia,ou=diretoria,ou=usuarios,dc=4labs,dc=example
+objectClass: inetOrgPerson
+objectClass: posixAccount
+objectClass: shadowAccount
+cn: Cezar Maia
+sn: Maia
+uid: cezar.maia
+mail: cezar.maia@4labs.example
+userPassword: {SSHA}rOdWDtdSRkexd8/wX14pddrCDCd4klEF
+uidNumber: 2019
+gidNumber: 2004
+homeDirectory: /home/cezar.maia
+loginShell: /bin/bash
+
+dn: uid=diego.chaves,ou=diretoria,ou=usuarios,dc=4labs,dc=example
+objectClass: inetOrgPerson
+objectClass: posixAccount
+objectClass: shadowAccount
+cn: Diego Chaves
+sn: Chaves
+uid: diego.chaves
+mail: diego.chaves@4labs.example
+userPassword: {SSHA}rOdWDtdSRkexd8/wX14pddrCDCd4klEF
+uidNumber: 2020
+gidNumber: 2004
+homeDirectory: /home/diego.chaves
+loginShell: /bin/bash

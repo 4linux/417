@@ -1,0 +1,26 @@
+#!/bin/bash
+
+# Diretórios e arquivos de log
+LOG_DIR="/var/log/backup-ldap"
+LOG_FILE="$LOG_DIR/backup-incremental.log"
+BACKUP_DIR="/backup-ldap/incremental"
+BACKUP_FILE="$BACKUP_DIR/backup-incremental-$(date '+%d-%m-%Y').ldif"
+
+# Criar diretórios de log e backup, se não existirem
+mkdir -p "$LOG_DIR"
+mkdir -p "$BACKUP_DIR"
+
+# Início do log
+echo "==== Início do Backup Incremental: $(date) ====" >> "$LOG_FILE"
+
+# Executar o backup e suprimir informações irrelevantes
+if ldapsearch -LLL -Y EXTERNAL -H ldapi:/// -b "cn=accesslog" > "$BACKUP_FILE" 2>/dev/null; then
+    echo "Backup incremental realizado com sucesso: $BACKUP_FILE" >> "$LOG_FILE"
+else
+    echo "Erro ao realizar o backup incremental." >> "$LOG_FILE"
+    exit 1
+fi
+
+# Final do log
+echo "==== Fim do Backup Incremental: $(date) ====" >> "$LOG_FILE"
+

@@ -1,0 +1,192 @@
+---
+- hosts: samba-server
+  become: yes
+  become_user: root
+  become_method: sudo
+
+  tasks:
+    - name: Garantindo /etc/hosts
+      lineinfile:
+        path: /etc/hosts
+        line: "{{ item }}"
+      with_items:
+        - 172.16.0.201 ldap-master1.4labs.example ldap-master1
+        - 172.16.0.202 ldap-master2.4labs.example ldap-master2
+        - 172.16.0.203 linux-services.4labs.example linux-services
+        - 172.16.0.204 samba-server.4labs.example samba-server
+        - 172.16.0.205 linux-client.4labs.example linux-client
+        - 172.16.0.206 windows-client.4labs.example windows-client
+
+    - name: Clona repositório com os arquivos do curso para a HOME do usuario suporte
+      git:
+        repo: 'https://github.com/4linux/417.git'
+        dest: /home/suporte/417
+
+    - name: Remove linhas que começam com 127.0.1.1 ou 127.0.2.1 no /etc/hosts
+      lineinfile:
+        path: /etc/hosts
+        regexp: '^127.0.[12].1'
+        state: absent
+
+    - name: Instala a biblioteca python3-libsemanage e chrony
+      package:
+        name:
+          - python3-libsemanage
+          - chrony
+        state: present
+
+    - name: Configura o serviço Chrony
+      ansible.builtin.replace:
+        path: /etc/chrony.conf
+        regexp: '#allow 192.168.0.0/16'
+        replace: 'allow 172.16.0.0/24'
+        backup: yes
+
+    - name: Adiciona bindcmdaddress 0.0.0.0 ao final de /etc/chrony.conf
+      ansible.builtin.blockinfile:
+        path: /etc/chrony.conf
+        insertafter: EOF
+        block: |
+          bindcmdaddress 0.0.0.0
+
+    - name: Habilitar e iniciar o serviço Chrony
+      ansible.builtin.systemd:
+        name: chronyd
+        enabled: yes
+        state: started
+
+    - name: Adiciona regra de firewall para a porta 123/udp do Chrony
+      ansible.builtin.firewalld:
+        port: 123/udp
+        permanent: yes
+        state: enabled
+          
+    - name: Remove smb.conf se existir para permitir reprovisionamento
+      file:
+        path: /etc/samba/smb.conf
+        state: absent
+
+    - name: Provisiona o domínio Samba como AD DC
+      command: samba-tool domain provision --server-role=dc --use-rfc2307 --dns-backend=SAMBA_INTERNAL --realm=4LABS.EXAMPLE --domain=4LABS --adminpass='Admin123!'
+      args:
+        creates: /etc/samba/smb.conf
+
+    - name: Configurações do SELinux para Samba
+      seboolean:
+        name: "{{ item }}"
+        state: yes
+        persistent: yes
+      loop:
+        - samba_create_home_dirs
+        - samba_domain_controller
+        - samba_enable_home_dirs
+        - samba_portmapper
+        - use_samba_home_dirs
+
+    - name: Adiciona regras de firewall para Samba
+      firewalld:
+        service: samba-dc
+        permanent: yes
+        state: enabled
+
+    - name: Adiciona portas para DNS, Kerberos e LDAP no firewall
+      firewalld:
+        port: "{{ item }}"
+        permanent: yes
+        state: enabled
+        immediate: yes
+      loop:
+        - 53/udp
+        - 53/tcp
+        - 88/tcp
+        - 88/udp
+        - 389/tcp
+        - 389/udp
+
+    - name: Atualiza o dns forwarder em smb.conf
+      ansible.builtin.replace:
+        path: /etc/samba/smb.conf
+        regexp: '127\.0\.0\.1'
+        replace: '1.1.1.1'
+        backup: yes
+
+    - name: Copia krb5.conf para configuração do Samba DC
+      copy:
+        src: /usr/share/samba/setup/krb5.conf
+        dest: /etc/krb5.conf.d/samba-dc
+
+    - name: Substituir ${REALM} por 4LABS.EXAMPLE no arquivo samba-dc
+      ansible.builtin.replace:
+        path: /etc/krb5.conf.d/samba-dc
+        regexp: '\${REALM}'
+        replace: '4LABS.EXAMPLE'
+        backup: yes
+
+    - name: Substituir ${DNSDOMAIN} por 4LABS.EXAMPLE no arquivo samba-dc
+      ansible.builtin.replace:
+        path: /etc/krb5.conf.d/samba-dc
+        regexp: '\${DNSDOMAIN}'
+        replace: '4LABS.EXAMPLE'
+        backup: yes
+
+    - name: Substituir ${HOSTNAME} por samba-server.4labs.example no arquivo samba-dc
+      ansible.builtin.replace:
+        path: /etc/krb5.conf.d/samba-dc
+        regexp: '\${HOSTNAME}'
+        replace: 'samba-server.4labs.example'
+        backup: yes
+
+    - name: Criar diretório /var/log/sssd
+      ansible.builtin.file:
+        path: /var/log/sssd
+        state: directory
+        mode: '0755'
+        owner: root
+        group: root
+
+    - name: Habilitar e iniciar o serviço Samba
+      ansible.builtin.systemd:
+        name: samba
+        enabled: yes
+        state: started
+
+    - name: Habilitar e iniciar o serviço SSSD
+      ansible.builtin.systemd:
+        name: sssd
+        enabled: yes
+        state: started
+
+    - name: Adiciona usuários ao Samba 4
+      command: "samba-tool user add {{ item }} 4Linux@2020 --must-change-at-next-login"
+      loop:
+        - samba-user1
+        - samba-user2
+        - samba-user3
+      ignore_errors: yes
+
+    - name: Redefine a senha dos usuários
+      command: "samba-tool user setpassword {{ item }} --newpassword='SenhaSegura123!'"
+      loop:
+        - samba-user1
+        - samba-user2
+        - samba-user3
+      ignore_errors: yes
+
+    - name: Desativa o gerenciamento de DNS pelo NetworkManager
+      copy:
+        dest: /etc/NetworkManager/conf.d/dns.conf
+        content: |
+          [main]
+          dns=none
+
+    - name: Reinicia o NetworkManager para aplicar mudanças
+      service:
+        name: NetworkManager
+        state: restarted
+
+    - name: Configura o arquivo /etc/resolv.conf
+      copy:
+        dest: /etc/resolv.conf
+        content: |
+          search 4labs.example
+          nameserver 127.0.0.1

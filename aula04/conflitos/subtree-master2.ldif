@@ -1,0 +1,3 @@
+dn: ou=master2,dc=4labs,dc=example
+objectClass: organizationalUnit
+ou: master2

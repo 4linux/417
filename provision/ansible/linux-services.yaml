@@ -1,0 +1,498 @@
+---
+- hosts: linux-services
+  become: yes
+  become_user: root
+  become_method: sudo
+  tasks:
+    - name: Garantindo /etc/hosts
+      lineinfile:
+        path: /etc/hosts
+        line: "{{ item }}"
+      with_items:
+        - 172.16.0.201 ldap-master1.4labs.example ldap-master1
+        - 172.16.0.202 ldap-master2.4labs.example ldap-master2
+        - 172.16.0.203 linux-services.4labs.example linux-services
+        - 172.16.0.204 samba-server.4labs.example samba-server
+        - 172.16.0.205 linux-client.4labs.example linux-client
+        - 172.16.0.206 windows-client.4labs.example windows-client
+
+    - name: Clona repositório com os arquivos do curso para a HOME do usuario suporte
+      git:
+        repo: 'https://github.com/4linux/417.git'
+        dest: /home/suporte/417
+
+    - name: Remove linhas que começam com 127.0.1.1 ou 127.0.2.1 no /etc/hosts
+      lineinfile:
+        path: /etc/hosts
+        regexp: '^127.0.[12].1'
+        state: absent
+
+    - name: Instala o Postfix
+      package:
+        name: postfix
+        state: present
+
+    - name: Configura o arquivo main.cf do Postfix
+      copy:
+        dest: /etc/postfix/main.cf
+        content: |
+          compatibility_level = 2
+          queue_directory = /var/spool/postfix
+          command_directory = /usr/sbin
+          daemon_directory = /usr/libexec/postfix
+          data_directory = /var/lib/postfix
+          mail_owner = postfix
+          myhostname = mail-server.4labs.example
+          mydomain = 4labs.example
+          myorigin = $mydomain
+          inet_interfaces = all
+          inet_protocols = ipv4
+          mydestination = $mydomain, $myhostname, localhost.$mydomain, localhost
+          unknown_local_recipient_reject_code = 550
+          mynetworks = 172.16.0.0/24, 127.0.0.0/8
+          relayhost = $mydomain
+          alias_maps = hash:/etc/aliases
+          alias_database = hash:/etc/aliases
+          home_mailbox = Maildir/
+          debug_peer_level = 2
+          debugger_command =
+               PATH=/bin:/usr/bin:/usr/local/bin:/usr/X11R6/bin
+               ddd $daemon_directory/$process_name $process_id & sleep 5
+          sendmail_path = /usr/sbin/sendmail.postfix
+          newaliases_path = /usr/bin/newaliases.postfix
+          mailq_path = /usr/bin/mailq.postfix
+          setgid_group = postdrop
+          html_directory = no
+          manpage_directory = /usr/share/man
+          sample_directory = /usr/share/doc/postfix/samples
+          readme_directory = /usr/share/doc/postfix/README_FILES
+          smtpd_tls_cert_file = /etc/pki/tls/certs/postfix.pem
+          smtpd_tls_key_file = /etc/pki/tls/private/postfix.key
+          smtpd_tls_security_level = may
+          smtp_tls_CApath = /etc/pki/tls/certs
+          smtp_tls_CAfile = /etc/pki/tls/certs/ca-bundle.crt
+          smtp_tls_security_level = may
+          meta_directory = /etc/postfix
+          shlib_directory = /usr/lib64/postfix
+
+    - name: Habilita e inicia o serviço Postfix
+      service:
+        name: postfix
+        enabled: yes
+        state: started
+
+    - name: Configura firewall para permitir conexões SMTP
+      firewalld:
+        service: smtp
+        permanent: yes
+        state: enabled
+        immediate: yes
+
+    - name: Ajusta SELinux para permitir Postfix enviar e-mails
+      command: setsebool -P httpd_can_sendmail 1
+
+    - name: Instala o Bind
+      package:
+        name: bind
+        state: present
+
+    - name: Configura o arquivo named.conf com a zona reversa
+      copy:
+        dest: /etc/named.conf
+        content: |
+          options {
+              listen-on port 53 { 127.0.0.1; 172.16.0.203; };
+              directory  "/var/named";
+              dump-file  "/var/named/data/cache_dump.db";
+              statistics-file "/var/named/data/named_stats.txt";
+              memstatistics-file "/var/named/data/named_mem_stats.txt";
+              secroots-file  "/var/named/data/named.secroots";
+              recursing-file "/var/named/data/named.recursing";
+              allow-query     { localhost; 172.16.0.0/24; };
+              recursion yes;
+              dnssec-validation yes;
+              managed-keys-directory "/var/named/dynamic";
+              geoip-directory "/usr/share/GeoIP";
+              pid-file "/run/named/named.pid";
+              session-keyfile "/run/named/session.key";
+              include "/etc/crypto-policies/back-ends/bind.config";
+          };
+
+          zone "4labs.example" IN {
+              type master;
+              file "/var/named/zones/db.4labs.example";
+          };
+
+          zone "0.16.172.in-addr.arpa" IN {
+              type master;
+              file "/var/named/zones/db.172.16.0";
+          };
+
+          logging {
+              channel default_debug {
+                  file "data/named.run";
+                  severity dynamic;
+              };
+          };
+
+          zone "." IN {
+              type hint;
+              file "named.ca";
+          };
+
+          include "/etc/named.rfc1912.zones";
+          include "/etc/named.root.key";
+
+    - name: Cria o diretório para arquivos de zona
+      file:
+        path: /var/named/zones
+        state: directory
+        owner: named
+        group: named
+        mode: '0755'
+
+    - name: Cria o arquivo de zona para 4labs.example
+      copy:
+        dest: /var/named/zones/db.4labs.example
+        content: |
+          $TTL 86400
+          @   IN  SOA linux-services.4labs.example. root.4labs.example. (
+              2024102701 ; Serial
+              3600       ; Refresh
+              1800       ; Retry
+              604800     ; Expire
+              86400 )    ; Minimum TTL
+
+          ; Servidores de nomes
+          @   IN  NS  linux-services.4labs.example.
+
+          ; Registro MX
+          @   IN  MX  10 linux-services.4labs.example.
+
+          ; Registros A
+          linux-services  IN  A     172.16.0.203
+          4labs.example.  IN  A     172.16.0.203
+
+          ldap-master1    IN  A     172.16.0.201
+          ldap-master2    IN  A     172.16.0.202
+          samba-server    IN  A     172.16.0.204
+          web-server      IN  CNAME linux-services
+          ftp-server      IN  CNAME linux-services
+          radius-server   IN  CNAME linux-services
+          ftp             IN  CNAME linux-services
+          imap            IN  CNAME linux-services
+          pop             IN  CNAME linux-services
+          smtp            IN  CNAME linux-services
+
+    - name: Cria o arquivo de zona reversa para 172.16.0.x
+      copy:
+        dest: /var/named/zones/db.172.16.0
+        content: |
+          $TTL 86400
+          @   IN  SOA linux-services.4labs.example. root.4labs.example. (
+              2024102701 ; Serial
+              3600       ; Refresh
+              1800       ; Retry
+              604800     ; Expire
+              86400 )    ; Minimum TTL
+
+          ; Servidores de nomes
+          @   IN  NS  linux-services.4labs.example.
+
+          ; Registros PTR para DNS reverso
+          201 IN PTR ldap-master1.4labs.example.
+          202 IN PTR ldap-master2.4labs.example.
+          203 IN PTR linux-services.4labs.example.
+          204 IN PTR samba-server.4labs.example.
+
+    - name: Ajusta permissões dos arquivos de zona
+      file:
+        path: /var/named/zones/db.4labs.example
+        owner: named
+        group: named
+        mode: '0644'
+
+    - name: Ajusta permissões do arquivo de zona reversa
+      file:
+        path: /var/named/zones/db.172.16.0
+        owner: named
+        group: named
+        mode: '0644'
+
+    - name: Ajusta SELinux para permitir Bind gravar em zonas
+      command: setsebool -P named_write_master_zones 1
+
+    - name: Habilita e inicia o serviço Bind
+      service:
+        name: named
+        enabled: yes
+        state: started
+
+    - name: Permite o serviço DNS no firewall
+      firewalld:
+        service: dns
+        permanent: yes
+        state: enabled
+        immediate: yes
+
+    - name: Instala o Dovecot
+      package:
+        name: dovecot
+        state: present
+
+    - name: Configura o arquivo /etc/dovecot/dovecot.conf
+      copy:
+        dest: /etc/dovecot/dovecot.conf
+        content: |
+          listen = *
+
+          dict {
+          }
+
+          !include conf.d/*.conf
+
+          !include_try local.conf
+
+    - name: Configura o arquivo /etc/dovecot/conf.d/10-auth.conf
+      copy:
+        dest: /etc/dovecot/conf.d/10-auth.conf
+        content: |
+          disable_plaintext_auth = no
+
+          auth_mechanisms = plain login
+
+          !include auth-system.conf.ext
+
+    - name: Configura o arquivo /etc/dovecot/conf.d/10-mail.conf
+      copy:
+        dest: /etc/dovecot/conf.d/10-mail.conf
+        content: |
+          mail_location = maildir:~/Maildir 
+
+          namespace inbox {
+            inbox = yes
+          }
+
+          first_valid_uid = 1000
+
+          protocol !indexer-worker {
+          }
+
+          mbox_write_locks = fcntl
+
+    - name: Configura o arquivo /etc/dovecot/conf.d/10-master.conf
+      copy:
+        dest: /etc/dovecot/conf.d/10-master.conf
+        content: |
+          service imap-login {
+            inet_listener imap {
+              #port = 143
+            }
+            inet_listener imaps {
+              #port = 993
+              #ssl = yes
+            }
+          }
+
+          service pop3-login {
+            inet_listener pop3 {
+              #port = 110
+            }
+            inet_listener pop3s {
+              #port = 995
+              #ssl = yes
+            }
+          }
+
+          service submission-login {
+            inet_listener submission {
+              #port = 587
+            }
+          }
+
+          service lmtp {
+            unix_listener lmtp {
+              #mode = 0666
+            }
+          }
+
+          service imap {
+          }
+
+          service pop3 {
+          }
+
+          service submission {
+          }
+
+          service auth {
+            unix_listener auth-userdb {
+            }
+
+            unix_listener /var/spool/postfix/private/auth {
+              mode = 0666
+              user = postfix
+              group = postfix
+            }
+          }
+
+          service auth-worker {
+          }
+
+          service dict {
+            unix_listener dict {
+            }
+          }
+
+    - name: Habilita e inicia o serviço Dovecot
+      service:
+        name: dovecot
+        enabled: yes
+        state: started
+
+    - name: Configura firewall para permitir conexões IMAP
+      firewalld:
+        service: imap
+        permanent: yes
+        state: enabled
+        immediate: yes
+
+    - name: Reinicia o serviço Dovecot para aplicar configurações
+      service:
+        name: dovecot
+        state: restarted
+
+    - name: Instala vsftpd
+      package:
+        name: vsftpd
+        state: present
+
+    - name: Configura o firewall para permitir conexões FTP
+      firewalld:
+        service: ftp
+        permanent: yes
+        state: enabled
+        immediate: yes
+
+    - name: Configura firewall para portas de FTP passivo
+      firewalld:
+        port: 40000-50000/tcp
+        permanent: yes
+        state: enabled
+        immediate: yes
+
+    - name: Configura SELinux para permitir FTP
+      command: setsebool -P ftpd_full_access 1
+
+    - name: Reinicia vsftpd
+      service:
+        name: vsftpd
+        enabled: yes
+        state: restarted
+
+    - name: Instala o servidor RADIUS (FreeRADIUS)
+      package:
+        name: freeradius
+        state: present
+
+    - name: Adiciona regras de firewall para o RADIUS
+      firewalld:
+        service: radius
+        zone: public
+        permanent: yes
+        state: enabled
+
+    - name: Adiciona portas específicas ao firewall para o RADIUS (1812/udp e 1813/udp)
+      firewalld:
+        port: "{{ item }}"
+        zone: public
+        permanent: yes
+        state: enabled
+        immediate: yes
+      with_items:
+        - 1812/udp
+        - 1813/udp
+
+    - name: Gera certificados TLS para o FreeRADIUS
+      command: /etc/raddb/certs/bootstrap
+      args:
+        creates: /etc/raddb/certs/server.pem
+
+    - name: Adiciona usuário 'suporte' ao arquivo /etc/raddb/users
+      lineinfile:
+        path: /etc/raddb/users
+        line: |
+          suporte Cleartext-Password := "4linux"
+              Service-Type = Framed-User,
+              Framed-Protocol = PPP,
+              Framed-IP-Address = 172.16.0.206,
+              Framed-IP-Netmask = 255.255.255.0,
+              Framed-Routing = None
+        insertafter: EOF
+
+    - name: Adiciona cliente 'client' ao arquivo /etc/raddb/clients.conf
+      blockinfile:
+        path: /etc/raddb/clients.conf
+        block: |
+          client client {
+            ipaddr = 172.16.0.206
+            secret = radius4linux
+            shortname = client
+            require_message_authenticator = true
+          }
+        insertafter: EOF
+
+    - name: Habilita e iniciar o serviço RADIUS
+      service:
+        name: radiusd
+        state: started
+        enabled: yes
+
+    - name: Instala o Apache
+      package:
+        name: httpd
+        state: present
+
+    - name: Configura a página inicial do Apache
+      copy:
+        content: "<h1>Bem-vindo ao servidor web Apache</h1>"
+        dest: /var/www/html/index.html
+
+    - name: Configura o firewall para permitir conexões HTTP e HTTPS
+      firewalld:
+        service: "{{ item }}"
+        permanent: yes
+        state: enabled
+        immediate: yes
+      with_items:
+        - http
+        - https
+
+    - name: Configura SELinux para permitir Apache
+      command: setsebool -P httpd_can_network_connect 1
+
+    - name: Habilita o Apache na inicialização e iniciar o serviço
+      service:
+        name: httpd
+        enabled: yes
+        state: started
+
+    - name: Desativa o gerenciamento de DNS pelo NetworkManager
+      copy:
+        dest: /etc/NetworkManager/conf.d/dns.conf
+        content: |
+          [main]
+          dns=none
+
+    - name: Reinicia o NetworkManager para aplicar mudanças
+      service:
+        name: NetworkManager
+        state: restarted
+
+    - name: Configura o arquivo /etc/resolv.conf
+      copy:
+        dest: /etc/resolv.conf
+        content: |
+          search 4labs.example
+          nameserver 172.16.0.203
+          nameserver 8.8.8.8

@@ -1,0 +1,5 @@
+dn: uid=novo.usuario1,ou=rh,ou=usuarios,dc=4labs,dc=example
+changetype: delete
+
+dn: uid=novo.usuario3,ou=consultoria,ou=usuarios,dc=4labs,dc=example
+changetype: delete

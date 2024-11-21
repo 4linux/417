@@ -1,0 +1,40 @@
+#!/bin/bash
+
+# Diretórios e arquivos de log
+LOG_DIR="/var/log/backup-ldap"
+LOG_FILE="$LOG_DIR/limpeza-de-backups.log"
+
+BACKUP_COMPLETO_DIR="/backup-ldap/completo"
+BACKUP_INCREMENTAL_DIR="/backup-ldap/incremental"
+
+# Configuração da retenção (em dias)
+RETENCAO_COMPLETO=7      # Mantém backups completos por 7 dias
+RETENCAO_INCREMENTAL=3   # Mantém backups incrementais por 3 dias
+
+# Criar diretório de log, se não existir
+mkdir -p "$LOG_DIR"
+
+# Início do log
+echo "==== Início da Limpeza de Backups: $(date) ====" >> "$LOG_FILE"
+
+# Limpeza de backups completos
+echo "Limpando backups completos mais antigos que $RETENCAO_COMPLETO dias..." >> "$LOG_FILE"
+find "$BACKUP_COMPLETO_DIR" -type f -name "*.ldif" -mtime +"$RETENCAO_COMPLETO" -print -delete >> "$LOG_FILE" 2>&1
+if [ $? -eq 0 ]; then
+    echo "Backups completos antigos removidos com sucesso." >> "$LOG_FILE"
+else
+    echo "Erro ao limpar backups completos antigos." >> "$LOG_FILE"
+fi
+
+# Limpeza de backups incrementais
+echo "Limpando backups incrementais mais antigos que $RETENCAO_INCREMENTAL dias..." >> "$LOG_FILE"
+find "$BACKUP_INCREMENTAL_DIR" -type f -name "*.ldif" -mtime +"$RETENCAO_INCREMENTAL" -print -delete >> "$LOG_FILE" 2>&1
+if [ $? -eq 0 ]; then
+    echo "Backups incrementais antigos removidos com sucesso." >> "$LOG_FILE"
+else
+    echo "Erro ao limpar backups incrementais antigos." >> "$LOG_FILE"
+fi
+
+# Final do log
+echo "==== Fim da Limpeza de Backups: $(date) ====" >> "$LOG_FILE"
+

@@ -1,0 +1,5 @@
+SOCKETDIR=/run/saslauthd
+
+MECH=ldap
+
+FLAGS="-O /etc/saslauthd.conf"

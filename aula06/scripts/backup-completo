@@ -1,0 +1,26 @@
+#!/bin/bash
+
+# Diretórios e arquivos de log
+LOG_DIR="/var/log/backup-ldap"
+LOG_FILE="$LOG_DIR/backup-completo.log"
+BACKUP_DIR="/backup-ldap/completo"
+BACKUP_FILE="$BACKUP_DIR/backup-completo-$(date '+%d-%m-%Y').ldif"
+
+# Criar diretório de log, se não existir
+mkdir -p "$LOG_DIR"
+mkdir -p "$BACKUP_DIR"
+
+# Início do log
+echo "==== Início do Backup Completo: $(date) ====" >> "$LOG_FILE"
+
+# Executar o backup
+if slapcat -n 2 -l "$BACKUP_FILE"; then
+    echo "Backup completo realizado com sucesso: $BACKUP_FILE" >> "$LOG_FILE"
+else
+    echo "Erro ao realizar o backup completo." >> "$LOG_FILE"
+    exit 1
+fi
+
+# Final do log
+echo "==== Fim do Backup Completo: $(date) ====" >> "$LOG_FILE"
+
