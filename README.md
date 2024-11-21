@@ -47,7 +47,7 @@ vagrant up ldap-master1 ldap-master2 linux-services samba-server linux-client
 
 SOMENTE VM WINDOWS
 ```bash
-vagrant up linux-client
+vagrant up windows-client
 ```
 
 _O Laboratório **pode demorar**, dependendo da conexão de internet e poder computacional, para ficar totalmente preparado._
