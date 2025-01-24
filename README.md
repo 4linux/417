@@ -26,7 +26,7 @@ Nome       | vCPUs | Memoria RAM | IP            | S.O.¹
 ldap-master1     | 2     | 1536MB | 172.16.0.201 | rocky-linux-9
 ldap-master2     | 2     | 1536MB | 172.16.0.202 | rocky-linux-9
 linux-services     | 2     | 2048MB | 172.16.0.203 | rocky-linux-9
-samba-server     | 2     | 1536MB | 172.16.0.204 | rocky-linux-9
+ad-server     | 2     | 1536MB | 172.16.0.204 | rocky-linux-9
 linux-client     | 1     | 1024MB | 172.16.0.205 | rocky-linux-9
 windows-client     | 2     | 2048MB | 172.16.0.206 | windows-11
 
@@ -42,7 +42,7 @@ SOMENTE VMS LINUX
 ```bash
 git clone https://github.com/4linux/417
 cd 417/
-vagrant up ldap-master1 ldap-master2 linux-services samba-server linux-client
+vagrant up ldap-master1 ldap-master2 linux-services ad-server linux-client
 ```
 
 SOMENTE VM WINDOWS
