@@ -1,0 +1,7 @@
+[home_wurzelbro_samba]
+name=samba-ad-dc build for Rocky (RockyLinux_9)
+type=rpm-md
+baseurl=https://download.opensuse.org/repositories/home:/wurzelbro:/samba/RockyLinux_9/
+gpgcheck=1
+gpgkey=https://download.opensuse.org/repositories/home:/wurzelbro:/samba/RockyLinux_9/repodata/repomd.xml.key
+enabled=1

@@ -1,6 +1,0 @@
-dn: uid=usuario.exclusivo,ou=master2,dc=exclusive,dc=master2,dc=example
-objectClass: inetOrgPerson
-cn: Usuario Exclusivo Master2
-sn: Master2
-uid: usuario.exclusivo
-mail: usuario.exclusivo@master2.example

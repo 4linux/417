@@ -1,0 +1,7 @@
+dn: olcDatabase={2}mdb,cn=config
+changetype: modify
+add: olcAccess
+olcAccess: {1}to dn.subtree="ou=diretoria,ou=usuarios,dc=4labs,dc=example"
+  by group.exact="cn=admin-geral,ou=grupos,dc=4labs,dc=example" write
+  by group.exact="cn=admin-projetos,ou=grupos,dc=4labs,dc=example" write
+  by * read

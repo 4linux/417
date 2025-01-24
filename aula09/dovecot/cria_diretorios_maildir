@@ -1,0 +1,34 @@
+#!/bin/bash
+
+# Obter a lista de usuários LDAP com UID >= 2000, ignorando o usuário nobody
+USERS=$(getent passwd | awk -F: '$3 >= 2000 { print $1 }' | grep -v "^nobody$")
+
+# Caminho base para os diretórios home
+BASE_HOME="/home"
+
+# Loop pelos usuários para criar a estrutura Maildir
+for USER in $USERS; do
+    MAILDIR="$BASE_HOME/$USER/Maildir"
+
+    # Obter o grupo principal do usuário
+    GROUP=$(id -gn "$USER" 2>/dev/null)
+
+    if [ -z "$GROUP" ]; then
+        echo "Erro: Não foi possível obter o grupo principal para o usuário $USER"
+        continue
+    fi
+
+    # Criar a estrutura do Maildir
+    echo "Criando estrutura Maildir para $USER"
+    mkdir -p "$MAILDIR/cur" "$MAILDIR/new" "$MAILDIR/tmp"
+
+    # Ajustar permissões e propriedade
+    chown -R "$USER:$GROUP" "$MAILDIR"
+    chmod -R 700 "$MAILDIR"
+
+    # Ajustar contexto de segurança SELinux, se necessário
+    semanage fcontext -a -t mail_home_rw_t "$MAILDIR(/.*)?"
+    restorecon -R "$MAILDIR"
+
+    echo "Estrutura Maildir criada para $USER em $MAILDIR com grupo $GROUP"
+done

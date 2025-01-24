@@ -1,0 +1,4 @@
+dn: uid=diego.chaves,ou=diretoria,ou=usuarios,dc=4labs,dc=example
+changetype: modify
+replace: sn
+sn: Chaves Santos

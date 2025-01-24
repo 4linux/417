@@ -1,0 +1,7 @@
+dn: ou=maquinas,dc=4labs,dc=example
+objectClass: organizationalUnit
+ou: maquinas
+
+dn: ou=idmap,dc=4labs,dc=example
+objectClass: organizationalUnit
+ou: idmap

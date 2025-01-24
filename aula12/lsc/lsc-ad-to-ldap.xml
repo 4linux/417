@@ -1,0 +1,261 @@
+<?xml version="1.0" ?>
+<lsc xmlns="http://lsc-project.org/XSD/lsc-core-2.1.xsd" revision="0">
+    <!-- Configuração das conexões LDAP, incluindo fonte (AD) e destino -->
+    <connections>
+        <!-- Conexão com o LDAP de origem (Active Directory) -->
+        <ldapConnection>
+            <name>ldap-src-conn</name>
+            <url>ldap://ad-server.4labs.example:389/DC=4labs,DC=example</url>
+            <username>CN=Administrator,CN=Users,DC=4labs,DC=example</username>
+            <password>Admin123!</password>
+            <authentication>SIMPLE</authentication>
+            <referral>IGNORE</referral>
+            <derefAliases>NEVER</derefAliases>
+            <version>VERSION_3</version>
+            <pageSize>-1</pageSize>
+            <factory>com.sun.jndi.ldap.LdapCtxFactory</factory>
+            <tlsActivated>true</tlsActivated>
+        </ldapConnection>
+        <!-- Conexão com o LDAP de destino -->
+        <ldapConnection>
+            <name>ldap-dst-conn</name>
+            <url>ldap://ldap-master1.4labs.example</url>
+            <username>cn=Manager,dc=4labs,dc=example</username>
+            <password>Admin123!</password>
+            <authentication>SIMPLE</authentication>
+            <referral>IGNORE</referral>
+            <derefAliases>NEVER</derefAliases>
+            <version>VERSION_3</version>
+            <pageSize>-1</pageSize>
+            <factory>com.sun.jndi.ldap.LdapCtxFactory</factory>
+            <tlsActivated>false</tlsActivated>
+        </ldapConnection>
+    </connections>
+
+    <!-- Configuração das tarefas de sincronização -->
+    <tasks>
+        <!-- Sincronização de usuários do AD para o destino -->
+        <task>
+            <name>Users</name>
+            <bean>org.lsc.beans.SimpleBean</bean>
+            <ldapSourceService>
+                <name>ad-source-service</name>
+                <connection reference="ldap-src-conn" />
+                <baseDn>CN=Users,DC=4labs,DC=example</baseDn>
+                <pivotAttributes>
+                    <string>samAccountName</string>
+                </pivotAttributes>
+                <fetchedAttributes>
+                    <string>description</string>
+                    <string>cn</string>
+                    <string>sn</string>
+                    <string>givenName</string>
+                    <string>samAccountName</string>
+                    <string>userPrincipalName</string>
+                    <string>uidNumber</string>
+                    <string>gidNumber</string>
+                    <string>homeDirectory</string>
+                    <string>loginShell</string>
+                    <string>displayName</string>
+                    <string>mail</string>
+                </fetchedAttributes>
+                <getAllFilter>(&amp;(objectClass=user)(gecos=User AD))</getAllFilter>
+                <getOneFilter>(&amp;(objectClass=user)(samAccountName={samAccountName}))</getOneFilter>
+                <cleanFilter>(&amp;(objectClass=user)(samAccountName={uid}))</cleanFilter>
+            </ldapSourceService>
+            <ldapDestinationService>
+                <name>opends-dst-service</name>
+                <connection reference="ldap-dst-conn" />
+                <baseDn>ou=adusers,ou=usuarios,dc=4labs,dc=example</baseDn>
+                <pivotAttributes>
+                    <string>uid</string>
+                </pivotAttributes>
+                <fetchedAttributes>
+                    <string>description</string>
+                    <string>cn</string>
+                    <string>sn</string>
+                    <string>userPassword</string>
+                    <string>objectClass</string>
+                    <string>uid</string>
+                    <string>mail</string>
+                    <string>uidNumber</string>
+                    <string>gidNumber</string>
+                    <string>homeDirectory</string>
+                    <string>loginShell</string>
+                    <string>displayName</string>
+                </fetchedAttributes>
+                <getAllFilter>(objectClass=inetorgperson)</getAllFilter>
+                <getOneFilter>(&amp;(objectClass=inetorgperson)(uid={samAccountName}))</getOneFilter>
+            </ldapDestinationService>
+            <propertiesBasedSyncOptions>
+                <mainIdentifier>"uid=" +
+                    srcBean.getDatasetFirstValueById("samAccountName") +
+                    ",ou=adusers,ou=usuarios,dc=4labs,dc=example"</mainIdentifier>
+                <defaultDelimiter>;</defaultDelimiter>
+                <defaultPolicy>FORCE</defaultPolicy>
+                <!-- Condições para criar, atualizar e deletar objetos -->
+                <conditions>
+                    <create>true</create>
+                    <update>true</update>
+                    <delete>true</delete>
+                    <changeId>true</changeId>
+                </conditions>
+                <!-- Configuração dos atributos sincronizados -->
+                <dataset>
+                    <name>uid</name>
+                    <policy>FORCE</policy>
+                    <createValues>
+                        <string>js:srcBean.getDatasetFirstValueById("samAccountName")</string>
+                    </createValues>
+                </dataset>
+                <dataset>
+                    <name>cn</name>
+                    <policy>FORCE</policy>
+                </dataset>
+                <dataset>
+                    <name>sn</name>
+                    <policy>FORCE</policy>
+                </dataset>
+                <dataset>
+                    <name>description</name>
+                    <policy>FORCE</policy>
+                </dataset>
+                <dataset>
+                    <name>displayName</name>
+                    <policy>FORCE</policy>
+                </dataset>
+                <dataset>
+                    <name>userPassword</name>
+                    <policy>FORCE</policy>
+                    <createValues>
+                        <string>"{SSHA}22Wv0zOqPhSh0/kcJoIymdEKtJUh3jo7"</string>
+                    </createValues>
+                </dataset>        
+                <dataset>
+                    <name>objectClass</name>
+                    <policy>FORCE</policy>
+                    <createValues>
+                        <string>"inetOrgPerson"</string>
+                        <string>"posixAccount"</string>
+                        <string>"shadowAccount"</string>
+                    </createValues>
+                </dataset>
+                <dataset>
+                    <name>uidNumber</name>
+                    <policy>FORCE</policy>
+                </dataset>
+                <dataset>
+                    <name>gidNumber</name>
+                    <policy>FORCE</policy>
+                </dataset>
+                <dataset>
+                    <name>homeDirectory</name>
+                    <policy>FORCE</policy>
+                    <createValues>
+                        <string>js:"/home/" + srcBean.getDatasetFirstValueById("samAccountName")</string>
+                    </createValues>
+                </dataset>
+                <dataset>
+                    <name>loginShell</name>
+                    <policy>FORCE</policy>
+                </dataset>
+            </propertiesBasedSyncOptions>
+        </task>
+        
+        <!-- Sincronização de grupos do AD para o destino -->
+        <task>
+            <name>Groups</name>
+            <bean>org.lsc.beans.SimpleBean</bean>
+            <ldapSourceService>
+                <name>ad-source-service-groups</name>
+                <connection reference="ldap-src-conn" />
+                <baseDn>CN=Users,DC=4labs,DC=example</baseDn>
+                <pivotAttributes>
+                    <string>cn</string>
+                </pivotAttributes>
+                <fetchedAttributes>
+                    <string>cn</string>
+                    <string>gidNumber</string>
+                    <string>member</string>
+                    <string>description</string>
+                    <string>msSFU30NisDomain</string>
+                </fetchedAttributes>
+                <getAllFilter>(&amp;(msSFU30NisDomain=4labs)(objectClass=group))</getAllFilter>
+                <getOneFilter>(&amp;(msSFU30NisDomain=4labs)(objectClass=group)(cn={cn}))</getOneFilter>
+                <cleanFilter>(&amp;(msSFU30NisDomain=4labs)(cn={cn}))</cleanFilter>
+            </ldapSourceService>
+            <ldapDestinationService>
+                <name>opends-dst-service-groups</name>
+                <connection reference="ldap-dst-conn" />
+                <baseDn>ou=adgroups,ou=grupos,dc=4labs,dc=example</baseDn>
+                <pivotAttributes>
+                    <string>cn</string>
+                </pivotAttributes>
+                <fetchedAttributes>
+                    <string>cn</string>
+                    <string>gidNumber</string>
+                    <string>memberUid</string>
+                    <string>description</string>
+                    <string>objectClass</string>
+                </fetchedAttributes>
+                <getAllFilter>(objectClass=posixGroup)</getAllFilter>
+                <getOneFilter>(&amp;(objectClass=posixGroup)(cn={cn}))</getOneFilter>
+            </ldapDestinationService>
+            <propertiesBasedSyncOptions>
+                <mainIdentifier>"cn=" +
+                    srcBean.getDatasetFirstValueById("cn") +
+                    ",ou=adgroups,ou=grupos,dc=4labs,dc=example"</mainIdentifier>
+                <defaultDelimiter>;</defaultDelimiter>
+                <defaultPolicy>FORCE</defaultPolicy>
+                <!-- Condições para criar, atualizar e deletar grupos -->
+                <conditions>
+                    <create>true</create>
+                    <update>true</update>
+                    <delete>true</delete>
+                    <changeId>true</changeId>
+                </conditions>
+                <!-- Configuração dos atributos sincronizados -->
+                <dataset>
+                    <name>objectClass</name>
+                    <policy>FORCE</policy>
+                    <createValues>
+                        <string>"posixGroup"</string>
+                    </createValues>
+                </dataset>
+                <dataset>
+                    <name>cn</name>
+                    <policy>FORCE</policy>
+                </dataset>
+                <dataset>
+                    <name>gidNumber</name>
+                    <policy>FORCE</policy>
+                </dataset>
+                <dataset>
+                    <name>description</name>
+                    <policy>FORCE</policy>
+                </dataset>
+                <dataset>
+                    <name>memberUid</name>
+                    <policy>FORCE</policy>
+                    <forceValues>
+                        <string>
+                        <![CDATA[
+                            var membersSrc = srcBean.getDatasetValuesById("member");
+                            var membersDst = new java.util.ArrayList();
+                            if (membersSrc !== null && membersSrc.size() > 0) {
+                                for (var i = 0; i < membersSrc.size(); i++) {
+                                    var memberSrc = membersSrc.get(i);
+                                    var cn = memberSrc.split(",")[0].replace("CN=", "").trim();
+                                    var uid = cn.toLowerCase().replace(" ", ".");
+                                    membersDst.add(uid);
+                                }
+                            }
+                            membersDst; // Retorna a lista dos membros convertidos
+                        ]]>
+                        </string>
+                    </forceValues>
+                </dataset>
+            </propertiesBasedSyncOptions>
+        </task>
+    </tasks>
+</lsc>

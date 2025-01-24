@@ -4,7 +4,7 @@ add: olcSyncRepl
 olcSyncRepl: rid=001
   provider=ldap://ldap-master1.4labs.example:389/
   bindmethod=simple
-  binddn="cn=replicator,dc=4labs,dc=example"
+  binddn="cn=Manager,dc=4labs,dc=example"
   credentials=Admin123!
   searchbase="dc=4labs,dc=example"
   scope=sub

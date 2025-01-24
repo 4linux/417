@@ -1,0 +1,4 @@
+dn: uid=daniel.salgado,ou=usuarios,dc=4labs,dc=example
+changetype: modify
+add: mail
+mail: daniel.salgado@4labs.example

@@ -1,0 +1,11 @@
+dn: cn=admin-geral,ou=grupos,dc=4labs,dc=example
+objectClass: top
+objectClass: groupOfNames
+cn: admin-geral
+member: cn=admin-projetos,ou=grupos,dc=4labs,dc=example
+
+dn: cn=admin-projetos,ou=grupos,dc=4labs,dc=example
+objectClass: top
+objectClass: groupOfNames
+cn: admin-projetos
+member: uid=marcio.santos,ou=projetos,ou=usuarios,dc=4labs,dc=example

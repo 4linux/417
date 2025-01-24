@@ -12,7 +12,7 @@
         - 172.16.0.201 ldap-master1.4labs.example ldap-master1
         - 172.16.0.202 ldap-master2.4labs.example ldap-master2
         - 172.16.0.203 linux-services.4labs.example linux-services
-        - 172.16.0.204 samba-server.4labs.example samba-server
+        - 172.16.0.204 ad-server.4labs.example ad-server
         - 172.16.0.205 linux-client.4labs.example linux-client
         - 172.16.0.206 windows-client.4labs.example windows-client
 
@@ -45,4 +45,5 @@
         content: |
           search 4labs.example
           nameserver 172.16.0.203
+          nameserver 172.16.0.204
           nameserver 8.8.8.8

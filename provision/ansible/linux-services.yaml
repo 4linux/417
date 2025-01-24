@@ -12,7 +12,7 @@
         - 172.16.0.201 ldap-master1.4labs.example ldap-master1
         - 172.16.0.202 ldap-master2.4labs.example ldap-master2
         - 172.16.0.203 linux-services.4labs.example linux-services
-        - 172.16.0.204 samba-server.4labs.example samba-server
+        - 172.16.0.204 ad-server.4labs.example ad-server
         - 172.16.0.205 linux-client.4labs.example linux-client
         - 172.16.0.206 windows-client.4labs.example windows-client
 
@@ -175,7 +175,7 @@
 
           ldap-master1    IN  A     172.16.0.201
           ldap-master2    IN  A     172.16.0.202
-          samba-server    IN  A     172.16.0.204
+          ad-server    IN  A     172.16.0.204
           web-server      IN  CNAME linux-services
           ftp-server      IN  CNAME linux-services
           radius-server   IN  CNAME linux-services
@@ -203,7 +203,7 @@
           201 IN PTR ldap-master1.4labs.example.
           202 IN PTR ldap-master2.4labs.example.
           203 IN PTR linux-services.4labs.example.
-          204 IN PTR samba-server.4labs.example.
+          204 IN PTR ad-server.4labs.example.
 
     - name: Ajusta permissões dos arquivos de zona
       file:
@@ -418,30 +418,6 @@
       args:
         creates: /etc/raddb/certs/server.pem
 
-    - name: Adiciona usuário 'suporte' ao arquivo /etc/raddb/users
-      lineinfile:
-        path: /etc/raddb/users
-        line: |
-          suporte Cleartext-Password := "4linux"
-              Service-Type = Framed-User,
-              Framed-Protocol = PPP,
-              Framed-IP-Address = 172.16.0.206,
-              Framed-IP-Netmask = 255.255.255.0,
-              Framed-Routing = None
-        insertafter: EOF
-
-    - name: Adiciona cliente 'client' ao arquivo /etc/raddb/clients.conf
-      blockinfile:
-        path: /etc/raddb/clients.conf
-        block: |
-          client client {
-            ipaddr = 172.16.0.206
-            secret = radius4linux
-            shortname = client
-            require_message_authenticator = true
-          }
-        insertafter: EOF
-
     - name: Habilita e iniciar o serviço RADIUS
       service:
         name: radiusd
@@ -477,6 +453,27 @@
         enabled: yes
         state: started
 
+    - name: Instala o Samba
+      package:
+        name: samba
+        state: present
+
+    - name: Remove o SSH
+      package:
+        name: openssh-server
+        state: absent
+
+    - name: Reinstala o SSH
+      package:
+        name: openssh-server
+        state: present
+
+    - name: Habilita o SSH na inicialização e inicia o serviço
+      service:
+        name: sshd
+        enabled: yes
+        state: started
+
     - name: Desativa o gerenciamento de DNS pelo NetworkManager
       copy:
         dest: /etc/NetworkManager/conf.d/dns.conf
@@ -495,4 +492,5 @@
         content: |
           search 4labs.example
           nameserver 172.16.0.203
+          nameserver 172.16.0.204
           nameserver 8.8.8.8

@@ -1,8 +1,0 @@
-dn: dc=exclusive,dc=master1,dc=example
-objectClass: top
-objectClass: domain
-dc: exclusive
-
-dn: ou=master1,dc=exclusive,dc=master1,dc=example
-objectClass: organizationalUnit
-ou: master1

@@ -1,0 +1,9 @@
+# Departamento de usuarios do AD
+dn: ou=adusers,ou=usuarios,dc=4labs,dc=example
+objectClass: organizationalUnit
+ou: adusers
+
+# Departamento de grupos do AD
+dn: ou=adgroups,ou=grupos,dc=4labs,dc=example
+objectClass: organizationalUnit
+ou: adgroups

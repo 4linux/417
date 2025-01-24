@@ -1,7 +1,10 @@
 dn: cn=config
 changetype: modify
 add: olcTLSCertificateFile
-olcTLSCertificateFile: /etc/openldap/certs/ldap-master1.crt
+olcTLSCertificateFile: /etc/openldap/certs/ldap.crt
 -
 add: olcTLSCertificateKeyFile
-olcTLSCertificateKeyFile: /etc/openldap/certs/ldap-master1.key
+olcTLSCertificateKeyFile: /etc/openldap/certs/ldap.key
+-
+add: olcTLSCACertificateFile
+olcTLSCACertificateFile: /etc/openldap/certs/ca.crt

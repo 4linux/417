@@ -1,0 +1,9 @@
+dn: cn=config
+changetype: modify
+replace: olcSaslHost
+olcSaslHost: ldap-master1.4labs.example
+
+dn: cn=config
+changetype: modify
+add: olcSaslRealm
+olcSaslRealm: 4LABS.EXAMPLE

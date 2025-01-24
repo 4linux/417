@@ -1,0 +1,326 @@
+<?xml version="1.0" ?>
+<lsc xmlns="http://lsc-project.org/XSD/lsc-core-2.1.xsd" revision="0">
+    <!-- Configuração das conexões LDAP, fonte e destino -->
+    <connections>
+        <!-- Conexão com o LDAP de origem -->
+        <ldapConnection>
+            <name>ldap-src-conn</name>
+            <url>ldaps://ldap-master1.4labs.example</url>
+            <username>cn=Manager,dc=4labs,dc=example</username>
+            <password>Admin123!</password>
+            <authentication>SIMPLE</authentication>
+            <referral>IGNORE</referral>
+            <derefAliases>NEVER</derefAliases>
+            <version>VERSION_3</version>
+            <pageSize>-1</pageSize>
+            <factory>com.sun.jndi.ldap.LdapCtxFactory</factory>
+            <tlsActivated>false</tlsActivated>
+        </ldapConnection>
+        <!-- Conexão com o LDAP de destino (Active Directory) -->
+        <ldapConnection>
+            <name>ad-dst-conn</name>
+            <url>ldaps://ad-server.4labs.example</url>
+            <username>CN=Administrator,CN=Users,DC=4labs,DC=example</username>
+            <password>Admin123!</password>
+            <authentication>SIMPLE</authentication>
+            <referral>IGNORE</referral>
+            <derefAliases>NEVER</derefAliases>
+            <version>VERSION_3</version>
+            <pageSize>-1</pageSize>
+            <factory>com.sun.jndi.ldap.LdapCtxFactory</factory>
+            <tlsActivated>false</tlsActivated>
+        </ldapConnection>
+    </connections>
+
+    <!-- Configuração das tarefas de sincronização -->
+    <tasks>
+        <!-- Sincronização de usuários -->
+        <task>
+            <name>Users</name>
+            <bean>org.lsc.beans.SimpleBean</bean>
+            <ldapSourceService>
+                <name>ldap-source-service</name>
+                <connection reference="ldap-src-conn" />
+                <baseDn>ou=usuarios,dc=4labs,dc=example</baseDn>
+                <pivotAttributes>
+                    <string>uid</string>
+                </pivotAttributes>
+                <fetchedAttributes>
+                    <string>uid</string>
+                    <string>cn</string>
+                    <string>sn</string>
+                    <string>mail</string>
+                    <string>uidNumber</string>
+                    <string>gidNumber</string>
+                    <string>homeDirectory</string>
+                    <string>loginShell</string>
+                    <string>userPassword</string>
+                </fetchedAttributes>
+                <!-- Filtros para buscar, localizar e limpar usuários -->
+                <getAllFilter>(&amp;((objectClass=shadowAccount)(gidNumber>=2000))(!(gidNumber>=3000)))</getAllFilter>
+                <getOneFilter>(&amp;((objectClass=shadowAccount)(gidNumber>=2000))(!(gidNumber>=3000))(uid={uid}))</getOneFilter>
+                <cleanFilter>(&amp;((objectClass=shadowAccount)(gidNumber>=2000))(!(gidNumber>=3000)))</cleanFilter>
+            </ldapSourceService>
+            <ldapDestinationService>
+                <name>ad-destination-service</name>
+                <connection reference="ad-dst-conn" />
+                <baseDn>OU=ldapusers,DC=4labs,DC=example</baseDn>
+                <pivotAttributes>
+                    <string>sAMAccountName</string>
+                </pivotAttributes>
+                <fetchedAttributes>
+                    <string>sAMAccountName</string>
+                    <string>userPrincipalName</string>
+                    <string>cn</string>
+                    <string>sn</string>
+                    <string>displayName</string>
+                    <string>objectClass</string>
+                    <string>mail</string>
+                    <string>uidNumber</string>
+                    <string>gidNumber</string>
+                    <string>unixHomeDirectory</string>
+                    <string>loginShell</string>
+                    <string>userAccountControl</string>
+                    <string>msSFU30NisDomain</string>
+                    <string>msSFU30Name</string>
+                    <string>pwdLastSet</string>
+                    <string>unicodePwd</string>
+                </fetchedAttributes>
+                <!-- Filtros para buscar e localizar usuários no destino -->
+                <getAllFilter>(objectClass=user)</getAllFilter>
+                <getOneFilter>(&amp;(sAMAccountName={uid})(objectClass=user))</getOneFilter>
+            </ldapDestinationService>
+            <propertiesBasedSyncOptions>
+                <mainIdentifier>"CN=" +
+                    srcBean.getDatasetFirstValueById("cn") +
+                    ",OU=ldapusers,DC=4labs,DC=example"</mainIdentifier>
+                <defaultDelimiter>;</defaultDelimiter>
+                <defaultPolicy>FORCE</defaultPolicy>
+                <!-- Atributos sincronizados de usuários -->
+                <dataset>
+                    <name>objectClass</name>
+                    <policy>FORCE</policy>
+                    <createValues>
+                        <string>"top"</string>
+                        <string>"person"</string>
+                        <string>"organizationalPerson"</string>
+                        <string>"user"</string>
+                    </createValues>
+                </dataset>
+                <dataset>
+                    <name>sAMAccountName</name>
+                    <policy>FORCE</policy>
+                    <createValues>
+                        <string>js:srcBean.getDatasetFirstValueById("uid")</string>
+                    </createValues>
+                </dataset>
+                <dataset>
+                    <name>userPrincipalName</name>
+                    <policy>FORCE</policy>
+                    <createValues>
+                        <string>js:srcBean.getDatasetFirstValueById("mail")</string>
+                    </createValues>
+                </dataset>
+                <dataset>
+                    <name>cn</name>
+                    <policy>FORCE</policy>
+                </dataset>
+                <dataset>
+                    <name>sn</name>
+                    <policy>FORCE</policy>
+                </dataset>
+                <dataset>
+                    <name>displayName</name>
+                    <policy>FORCE</policy>
+                    <createValues>
+                        <string>js:srcBean.getDatasetFirstValueById("cn")</string>
+                    </createValues>
+                </dataset>
+                <dataset>
+                    <name>mail</name>
+                    <policy>FORCE</policy>
+                </dataset>
+                <dataset>
+                    <name>uidNumber</name>
+                    <policy>FORCE</policy>
+                </dataset>
+                <dataset>
+                    <name>gidNumber</name>
+                    <policy>FORCE</policy>
+                </dataset>
+                <dataset>
+                    <name>unixHomeDirectory</name>
+                    <policy>FORCE</policy>
+                    <createValues>
+                        <string>js:srcBean.getDatasetFirstValueById("homeDirectory")</string>
+                    </createValues>
+                </dataset>
+                <dataset>
+                    <name>loginShell</name>
+                    <policy>FORCE</policy>
+                </dataset>
+                <dataset>
+                    <name>userAccountControl</name>
+                    <policy>FORCE</policy>
+                    <createValues>
+                        <string>"512"</string>
+                    </createValues>
+                </dataset>
+                <dataset>
+                    <name>msSFU30NisDomain</name>
+                    <policy>FORCE</policy>
+                    <createValues>
+                        <string>"4labs"</string>
+                    </createValues>
+                </dataset>
+                <dataset>
+                    <name>msSFU30Name</name>
+                    <policy>FORCE</policy>
+                    <createValues>
+                        <string>js:srcBean.getDatasetFirstValueById("uid")</string>
+                    </createValues>
+                </dataset>
+                <dataset>
+                    <name>unicodePwd</name>
+                    <policy>FORCE</policy>
+                    <createValues>
+                        <string><![CDATA[
+                            AD.getUnicodePwd("SenhaSegura123!")
+                        ]]></string>
+                    </createValues>
+                </dataset>
+                <dataset>
+                    <name>pwdLastSet</name>
+                    <policy>FORCE</policy>
+                    <createValues>
+                        <string>-1</string>
+                    </createValues>
+                </dataset>
+            </propertiesBasedSyncOptions>
+        </task>
+
+        <!-- Sincronização de grupos -->
+        <task>
+            <name>Groups</name>
+            <bean>org.lsc.beans.SimpleBean</bean>
+            <ldapSourceService>
+                <name>ldap-source-service-groups</name>
+                <connection reference="ldap-src-conn" />
+                <baseDn>ou=grupos,dc=4labs,dc=example</baseDn>
+                <pivotAttributes>
+                    <string>cn</string>
+                </pivotAttributes>
+                <fetchedAttributes>
+                    <string>cn</string>
+                    <string>gidNumber</string>
+                    <string>description</string>
+                    <string>memberUid</string>
+                </fetchedAttributes>
+                <!-- Filtros para buscar e localizar grupos -->
+                <getAllFilter>(&amp;((objectClass=posixGroup)(gidNumber>=2000))(!(gidNumber>=3000)))</getAllFilter>
+                <getOneFilter>(&amp;((objectClass=posixGroup)(gidNumber>=2000))(!(gidNumber>=3000))(cn={cn}))</getOneFilter>
+                <cleanFilter>(&amp;(objectClass=group)(msSFU30NisDomain=4labs))</cleanFilter>
+            </ldapSourceService>
+            <ldapDestinationService>
+                <name>ad-destination-service-groups</name>
+                <connection reference="ad-dst-conn" />
+                <baseDn>OU=ldapgroups,DC=4labs,DC=example</baseDn>
+                <pivotAttributes>
+                    <string>cn</string>
+                </pivotAttributes>
+                <fetchedAttributes>
+                    <string>cn</string>
+                    <string>gidNumber</string>
+                    <string>description</string>
+                    <string>msSFU30NisDomain</string>
+                    <string>groupType</string>
+                    <string>sAMAccountName</string>
+                    <string>objectClass</string>
+                    <string>member</string>
+                </fetchedAttributes>
+                <getAllFilter>(&amp;(msSFU30NisDomain=4labs)(objectClass=group))</getAllFilter>
+                <getOneFilter>(&amp;(msSFU30NisDomain=4labs)(objectClass=group)(cn={cn}))</getOneFilter>
+            </ldapDestinationService>
+            <propertiesBasedSyncOptions>
+                <mainIdentifier>"CN=" + srcBean.getDatasetFirstValueById("cn") + ",OU=ldapgroups,DC=4labs,DC=example"</mainIdentifier>
+                <defaultDelimiter>;</defaultDelimiter>
+                <defaultPolicy>FORCE</defaultPolicy>
+                <!-- Condições para criar, atualizar e deletar grupos -->
+                <conditions>
+                    <create>true</create>
+                    <update>true</update>
+                    <delete>true</delete>
+                    <changeId>true</changeId>
+                </conditions>
+                <!-- Atributos sincronizados de grupos -->
+                <dataset>
+                    <name>objectClass</name>
+                    <policy>FORCE</policy>
+                    <createValues>
+                        <string>"top"</string>
+                        <string>"group"</string>
+                    </createValues>
+                </dataset>
+                <dataset>
+                    <name>cn</name>
+                    <policy>FORCE</policy>
+                </dataset>
+                <dataset>
+                    <name>gidNumber</name>
+                    <policy>FORCE</policy>
+                </dataset>
+                <dataset>
+                    <name>description</name>
+                    <policy>FORCE</policy>
+                </dataset>
+                <dataset>
+                    <name>msSFU30NisDomain</name>
+                    <policy>FORCE</policy>
+                    <createValues>
+                        <string>"4labs"</string>
+                    </createValues>
+                </dataset>
+                <dataset>
+                    <name>groupType</name>
+                    <policy>FORCE</policy>
+                    <createValues>
+                        <string>"-2147483646"</string>
+                    </createValues>
+                </dataset>
+                <dataset>
+                    <name>sAMAccountName</name>
+                    <policy>FORCE</policy>
+                    <createValues>
+                        <string><![CDATA[
+                            srcBean.getDatasetFirstValueById("cn").toLowerCase();
+                        ]]></string>
+                    </createValues>
+                </dataset>
+                <dataset>
+                    <name>member</name>
+                    <policy>FORCE</policy>
+                    <forceValues>
+                        <string><![CDATA[
+                            var membersSrc = srcBean.getDatasetValuesById("memberUid");
+                            var membersDst = new java.util.ArrayList();
+                            if (membersSrc !== null && membersSrc.size() > 0) {
+                                var memberArray = membersSrc.toArray();
+                                for (var i = 0; i < memberArray.length; i++) {
+                                    var uid = memberArray[i];
+                                    var names = uid.split(".");
+                                    var capitalizedNames = names.map(function(name) {
+                                        return name.charAt(0).toUpperCase() + name.slice(1).toLowerCase();
+                                    });
+                                    var fullName = capitalizedNames.join(" ");
+                                    var userDn = "CN=" + fullName + ",OU=ldapusers,DC=4labs,DC=example";
+                                    membersDst.add(userDn);
+                                }
+                            }
+                            membersDst; // Retorna a lista de DNs
+                        ]]></string>
+                    </forceValues>
+                </dataset>
+            </propertiesBasedSyncOptions>
+        </task>
+    </tasks>
+</lsc>

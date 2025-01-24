@@ -7,7 +7,7 @@ vms = {
   'ldap-master1' => {'memory' => '1536', 'cpus' => 1, 'ip' => '201', 'box' => 'rocky-linux9-vagrant/rocky-linux9-vagrant', 'provision' => 'provision/ansible/ldap-master1.yaml'},
   'ldap-master2' => {'memory' => '1536', 'cpus' => 1, 'ip' => '202', 'box' => 'rocky-linux9-vagrant/rocky-linux9-vagrant', 'provision' => 'provision/ansible/ldap-master2.yaml'},
   'linux-services' => {'memory' => '2048', 'cpus' => 1, 'ip' => '203', 'box' => 'rocky-linux9-vagrant/rocky-linux9-vagrant', 'provision' => 'provision/ansible/linux-services.yaml'},
-  'samba-server' => {'memory' => '1536', 'cpus' => 1, 'ip' => '204', 'box' => 'samba4-rocky-linux9-vagrant/samba4-rocky-linux9-vagrant', 'provision' => 'provision/ansible/samba-server.yaml'},
+  'ad-server' => {'memory' => '1536', 'cpus' => 1, 'ip' => '204', 'box' => 'samba4-rocky-linux9-vagrant/samba4-rocky-linux9-vagrant', 'provision' => 'provision/ansible/ad-server.yaml'},
   'linux-client' => {'memory' => '1024', 'cpus' => 1, 'ip' => '205', 'box' => 'rocky-linux9-vagrant/rocky-linux9-vagrant', 'provision' => 'provision/ansible/linux-client.yaml'}
 }
 
@@ -45,8 +45,6 @@ Vagrant.configure('2') do |config|
       vb.cpus = 2
       vb.gui = true
     end
-
-    win11.vm.network "private_network", type: "dhcp"
   end
 end
 

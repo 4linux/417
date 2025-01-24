@@ -1,0 +1,10 @@
+dn: cn=config
+changetype: modify
+add: olcSaslSecProps
+olcSaslSecProps: noanonymous,noplain,noactive,none,minssf=56
+
+dn: cn=config
+changetype: modify
+replace: olcAuthzRegexp
+olcAuthzRegexp: uid=(.*),cn=gssapi,cn=auth
+  ldap:///ou=usuarios,dc=4labs,dc=example??sub?(uid=$1)

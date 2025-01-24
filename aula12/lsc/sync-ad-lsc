@@ -1,0 +1,27 @@
+#!/bin/bash
+
+# Caminho do arquivo de log
+LOG_FILE="/var/log/lsc_sync.log"
+
+# Data e hora
+DATE=$(date +"%Y-%m-%d %H:%M:%S")
+
+# Sincronização de usuários
+echo "[$DATE] Iniciando sincronização de usuários..." >> $LOG_FILE
+sudo lsc -s Users >> $LOG_FILE 2>&1
+if [ $? -eq 0 ]; then
+    echo "[$DATE] Sincronização de usuários concluída com sucesso." >> $LOG_FILE
+else
+    echo "[$DATE] Erro na sincronização de usuários." >> $LOG_FILE
+fi
+
+# Sincronização de grupos
+echo "[$DATE] Iniciando sincronização de grupos..." >> $LOG_FILE
+sudo lsc -s Groups >> $LOG_FILE 2>&1
+if [ $? -eq 0 ]; then
+    echo "[$DATE] Sincronização de grupos concluída com sucesso." >> $LOG_FILE
+else
+    echo "[$DATE] Erro na sincronização de grupos." >> $LOG_FILE
+fi
+
+echo "[$DATE] ---" >> $LOG_FILE
